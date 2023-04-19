@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My TODO App</title>
+</head>
+<body>
+    <h1>My TODO App</h1>
+    <ol id='olTodo'></ol>
+    <button id="btnAdd">Add TODO</button>
+
+    <script>
+        const btnCreate = document.getElementById("btnAdd")
+        btnCreate.addEventListener("click", async e =>{
+            const jsonRequest = {}
+            jsonRequest.todo = prompt("What do you want to do?");
+            const result = await fetch("http://localhost:9999/todos", {method: "POST", headers: {"content-type": "application/json"}, body: JSON.stringify(jsonRequest)})
+            const sucess = await result.json();
+            readTodos()
+            alert("Created!")
+        })
+        readTodos()
+        async function readTodos() {
+            try {
+                const olTodo = document.getElementById("olTodo")
+                while(olTodo.firstChild) olTodo.removeChild(olTodo.firstChild)
+                const result = await fetch("http://localhost:9999/todos", {method: "GET"})
+                todos = await result.json();
+                todos.forEach(element => {
+                    const li = document.createElement("li")
+                    li.textContent = element.todo;
+                    li.id = element.id;
+                    li.addEventListener("click", async e => {
+                        const jsonRequest = {}
+                        jsonRequest.id = e.target.id;
+                        const result = await fetch("http://localhost:9999/todos", {method: "DELETE", headers: {"content-type": "application/json"}, body: JSON.stringify(jsonRequest)})
+                        const sucess = await result.json();
+                        readTodos()
+                        alert("Deleted!")
+                    })
+                    olTodo.appendChild(li)
+                });
+            }
+            catch(err) {
+                console.log("Error fetching todos.")
+            }
+            
+        }
+    </script>
+    
+</body>
+</html>
